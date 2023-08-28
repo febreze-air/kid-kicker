@@ -11,6 +11,7 @@ const client = new Client({
         IntentsBitField.Flags.GuildMessages,
         IntentsBitField.Flags.MessageContent,
         IntentsBitField.Flags.GuildMembers,
+        IntentsBitField.Flags.DirectMessages,
     ],
 })
 
@@ -18,6 +19,7 @@ client.on('ready', async () => {
     console.log(`✅ ${client.user.username} is online.`)
     logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID)
     logsChannel.send(embed(`✅ ${client.user.username} is online.`))
+    const channel = client.channels.cache.find(ch => ch.name === process.env.INVITE_CHANNEL_NAME);  // Replace 'general' with your channel
     if (scheduled) {return}
     cron.schedule('00 * * * *', async () => {
     console.log('Attempting to kick kids...')
@@ -35,7 +37,13 @@ client.on('ready', async () => {
                     console.log('Resetting kick count.')
                 }
                 try {
-                    await member.kick()
+                    const invite = await channel.createInvite({
+                        maxAge: 60 * 60 * 24 * 3,  // 3 days
+                        maxUses: 1  // 1 use
+                      });
+                    // Send a DM with the kick reason and invite link
+                    await member.send(`You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the 2 day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`);
+                    await member.kick('Kicked for not verifying within the timeline.')
                     await logsChannel.send(embed(`Kicked ${member.user.tag} for being a kid.`))
                     count++
                 } catch (err) {
