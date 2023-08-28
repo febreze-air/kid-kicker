@@ -43,7 +43,9 @@ client.on('ready', async () => {
                       });
                     // Send a DM with the kick reason and invite link
                     await member.send(`You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the 2 day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`);
+                    // Kick the member with reason
                     await member.kick('Kicked for not verifying within the timeline.')
+                    // Send a notification user was kicked to the logs channel
                     await logsChannel.send(embed(`Kicked ${member.user.tag} for being a kid.`))
                     count++
                 } catch (err) {
