@@ -1,4 +1,4 @@
-require('./dotenv/config')
+require('../dotenv/config')
 const { Client, IntentsBitField, EmbedBuilder } = require('discord.js')
 const cron = require('node-cron')
 let scheduled = false
