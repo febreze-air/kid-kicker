@@ -1,4 +1,5 @@
 require('dotenv/config')
+const mongoose = require('mongoose')
 const { Client, IntentsBitField, EmbedBuilder } = require('discord.js')
 const cron = require('node-cron')
 let scheduled = false
@@ -13,7 +14,18 @@ const client = new Client({
         IntentsBitField.Flags.GuildMembers,
         IntentsBitField.Flags.DirectMessages,
     ],
-})
+});
+
+(async () => {
+    try{
+        await mongoose.connect("mongodb://localhost:27017/gitsetup")
+        console.log("DB CONNECTED")
+    }
+    catch (error){
+        console.error("error", error)
+        throw error;
+    }
+})();
 
 client.on('ready', async () => {
     console.log(`✅ ${client.user.username} is online.`)

@@ -4,7 +4,7 @@
   "description": "An auto moderation Discord bot that removes users who have a set role in the discord server once per hour.",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": ""
   },
   "keywords": [],
   "author": "febreze_air",
@@ -12,6 +12,7 @@
   "dependencies": {
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
+    "mongoose": "^7.5.2",
     "node-cron": "^3.0.2"
   }
 }
