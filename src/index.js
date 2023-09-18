@@ -33,21 +33,49 @@ const client = new Client({
     }
 })();
 
-client.on('ready', async () => {
+client.on('ready', async () => {  
     console.log(`✅ ${client.user.username} is online.`)
     logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID)
     logsChannel.send(embed(`✅ ${client.user.username} is online.`))
-    const channel = client.channels.cache.find(ch => ch.name === process.env.INVITE_CHANNEL_NAME);  // Replace 'general' with your channel
+    const channel = client.channels.cache.find(ch => ch.name === process.env.INVITE_CHANNEL_NAME)
     if (scheduled) {return}
+    // Run every hour
     cron.schedule('00 * * * *', async () => {
     console.log('Attempting to kick kids...')
     const guild = client.guilds.cache.first();
+    // Add all unverified users to the database
     try {
         let members = await guild.members.fetch();
         await Promise.all(members.map(async member => {
             if(member.user.bot) return
-            if(member.roles.cache.has(process.env.ROLE_TO_KICK_ID)) {
-                console.log(`Yes, the member ${member.user.tag} has the role with ID "${process.env.KID_ROLE_ID}".`);
+            if(member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return
+            newUser = new User({
+                userId: member.id,
+                timeJoined: new Date()
+            })
+            newUser.save()
+            .then(() => console.log('User saved successfully'))
+            .catch(err => console.error('Error saving user:', err));
+        }));        
+    } catch (err) {
+        console.error(err);
+    }
+    // Kick all users who joined more than 48 hours ago and have not verified
+    try {
+        // Get all users from the database
+        User.find({})
+        .then(users => {
+            let members = users;
+        })
+        .catch(err => console.error('Error retrieving users:', err));
+        let fortyEightHoursAgo = new Date(Date.now() - 48*60*60*1000); // 48 hours ago
+        await Promise.all(members.map(async member => {   
+            // If the user joined more than 48 hours ago
+            if(member.timeJoined <= fortyEightHoursAgo) {
+                let m = await guild.members.fetch(member.userId);
+                if(m.user.bot) return
+                if(m.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return
+                console.log(`Yes, the member ${m.user.tag} has not verified within 2 days.`);
                 if(count > 4) {
                     console.log('Reached 5 kicks, stopping.')
                     await delay(10 * 60 * 1000);
@@ -60,22 +88,24 @@ client.on('ready', async () => {
                         maxUses: 1  // 1 use
                       });
                     // Send a DM with the kick reason and invite link
-                    await member.send(`You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the 2 day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`);
+                    await m.send(`You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the 2 day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`);
                     // Kick the member with reason
-                    await member.kick('Kicked for not verifying within the timeline.')
+                    await m.kick('Kicked for not verifying within the timeline.')
                     // Send a notification user was kicked to the logs channel
-                    await logsChannel.send(embed(`Kicked ${member.user.tag} for being a kid.`))
+                    await logsChannel.send(embed(`Kicked ${m.user.tag} for being a kid.`))
                     count++
                 } catch (err) {
-                    console.error('Cant kick: ', member.user.tag, err)
-                }
+                    let m = await guild.members.fetch(member.userId);
+                    console.error('Cant kick: ', m.user.tag, err)
+                } 
             }
-        }));
+        }))
         console.log('Finished Attempting to kick kids.')
         scheduled = true
     } catch (err) {
         console.error(err);
     }
+
     })
 })
 
