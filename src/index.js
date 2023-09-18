@@ -20,6 +20,12 @@ const client = new Client({
     try{
         await mongoose.connect("mongodb://localhost:27017/gitsetup")
         console.log("✅ Database is connected")
+        const userSchema = new mongoose.Schema({
+            userId: { type: Number, unique: true },
+            timeJoined: Date
+          });
+          
+        const User = mongoose.model('User', userSchema);
     }
     catch (error){
         console.error("error", error)
@@ -71,6 +77,18 @@ client.on('ready', async () => {
         console.error(err);
     }
     })
+})
+
+//Function to add a member along with the time they joined to the database when they join
+client.on('guildMemberAdd', async(m) => {
+    const newUser = new User({
+        userId: m.id,
+        timeJoined: new Date()
+      });
+      
+      newUser.save()
+        .then(() => console.log('User saved successfully'))
+        .catch(err => console.error('Error saving user:', err));
 })
 
 client.login(process.env.TOKEN)
