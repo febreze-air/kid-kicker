@@ -19,7 +19,7 @@ const client = new Client({
 (async () => {
     try{
         await mongoose.connect("mongodb://localhost:27017/gitsetup")
-        console.log("DB CONNECTED")
+        console.log("✅ Database is connected")
     }
     catch (error){
         console.error("error", error)
