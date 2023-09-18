@@ -61,7 +61,7 @@ client.on('ready', async () => {
                     await logsChannel.send(embed(`Kicked ${member.user.tag} for being a kid.`))
                     count++
                 } catch (err) {
-                    console.log('Cant kick: ', member.user.tag, err)
+                    console.error('Cant kick: ', member.user.tag, err)
                 }
             }
         }));
