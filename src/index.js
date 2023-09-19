@@ -6,6 +6,7 @@ let scheduled = false
 let count = 0
 const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
 
+
 const client = new Client({
     intents: [
         IntentsBitField.Flags.Guilds,
@@ -18,14 +19,10 @@ const client = new Client({
 
 (async () => {
     try{
-        await mongoose.connect("mongodb://localhost:27017/gitsetup")
+        await mongoose.connect("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.1")
         console.log("✅ Database is connected")
-        const userSchema = new mongoose.Schema({
-            userId: { type: Number, unique: true },
-            timeJoined: Date
-          });
-          
-        const User = mongoose.model('User', userSchema);
+        
+       
     }
     catch (error){
         console.error("error", error)
@@ -33,14 +30,21 @@ const client = new Client({
     }
 })();
 
+const userSchema = new mongoose.Schema({
+    userId: { type: String, unique: true },
+    timeJoined: Date
+  });
+const User = mongoose.model('User', userSchema);
+
 client.on('ready', async () => {  
+    
     console.log(`✅ ${client.user.username} is online.`)
     logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID)
     logsChannel.send(embed(`✅ ${client.user.username} is online.`))
     const channel = client.channels.cache.find(ch => ch.name === process.env.INVITE_CHANNEL_NAME)
     if (scheduled) {return}
     // Run every hour
-    cron.schedule('00 * * * *', async () => {
+    cron.schedule('30 * * * *', async () => {
     console.log('Attempting to kick kids...')
     const guild = client.guilds.cache.first();
     // Add all unverified users to the database
@@ -49,12 +53,20 @@ client.on('ready', async () => {
         await Promise.all(members.map(async member => {
             if(member.user.bot) return
             if(member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return
-            newUser = new User({
-                userId: member.id,
-                timeJoined: new Date()
-            })
-            newUser.save()
-            .then(() => console.log('User saved successfully'))
+            User.findOne({userId: member.user.id})
+                .then(existingUser => {
+                    if(existingUser){
+                        console.log(`${member.user.tag},\n${member.user.id},\n${existingUser.userId}`)
+                    }
+                    else{
+                        newUser = new User({
+                            userId: member.user.id,
+                            timeJoined: new Date()
+                        })
+                        newUser.save()
+                        console.log(`${member.user.tag} saved successfully`)
+                    }
+                })
             .catch(err => console.error('Error saving user:', err));
         }));        
     } catch (err) {
@@ -63,12 +75,10 @@ client.on('ready', async () => {
     // Kick all users who joined more than 48 hours ago and have not verified
     try {
         // Get all users from the database
-        User.find({})
-        .then(users => {
-            let members = users;
-        })
-        .catch(err => console.error('Error retrieving users:', err));
-        let fortyEightHoursAgo = new Date(Date.now() - 48*60*60*1000); // 48 hours ago
+        members = await fetchUsers()
+        console.log(members)
+        //let fortyEightHoursAgo = new Date(Date.now() - 48*60*60*1000); // 48 hours ago
+        let fortyEightHoursAgo = new Date(Date.now() - 60 * 60 * 1000) //One hour ago
         await Promise.all(members.map(async member => {   
             // If the user joined more than 48 hours ago
             if(member.timeJoined <= fortyEightHoursAgo) {
@@ -93,6 +103,13 @@ client.on('ready', async () => {
                     await m.kick('Kicked for not verifying within the timeline.')
                     // Send a notification user was kicked to the logs channel
                     await logsChannel.send(embed(`Kicked ${m.user.tag} for being a kid.`))
+                    //
+                    try{
+                        await User.findOneAndDelete({ userId: m.user.id });
+                    }
+                    catch(err){
+                        console.error('Error deleting user:', err);
+                    }
                     count++
                 } catch (err) {
                     let m = await guild.members.fetch(member.userId);
@@ -100,10 +117,22 @@ client.on('ready', async () => {
                 } 
             }
         }))
+  
         console.log('Finished Attempting to kick kids.')
         scheduled = true
     } catch (err) {
-        console.error(err);
+        if (err.code === 10013) {
+            console.error(`User with ID ${member.userId} not found in the guild. Removing from the database.`);
+            // Code to remove the user from the database
+            try{
+                await User.findOneAndDelete({ userId: m.user.id });
+            }
+            catch(err){
+                console.error('Error deleting user:', err);
+            }
+        } else {
+            console.error('An unknown error occurred:', err);
+        }
     }
 
     })
@@ -130,4 +159,13 @@ function embed(m) {
     ]}
     return output
 }
+
+async function fetchUsers() {
+    try {
+      const users = await User.find({})
+      return users
+    } catch (error) {
+      console.error('Error retrieving users:', error);
+    }
+  }
 
