@@ -20,7 +20,7 @@ const client = new Client({
 (async () => {
     try{
         await mongoose.connect("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.1")
-        console.log("✅ Database is connected at ${getDate()}")
+        console.log(`✅ Database is connected at ${getDate()}`)
     }
     catch (error){
         console.error("error", error)
@@ -207,7 +207,7 @@ async function writeUser(userId){
 }
 
 function getDate(){
-    var estearnTime = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
+    var easternTime = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
     return easternTime
 }
 
