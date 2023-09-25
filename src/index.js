@@ -45,30 +45,7 @@ client.on('ready', async () => {
     console.log('Attempting to kick kids...')
     const guild = client.guilds.cache.first();
     // Add all unverified users to the database
-    try {
-        let members = await guild.members.fetch();
-        await Promise.all(members.map(async member => {
-            if(member.user.bot) return
-            if(member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return
-            User.findOne({userId: member.user.id})
-                .then(existingUser => {
-                    if(existingUser){
-                        console.log(`${member.user.tag},\n${member.user.id},\n${existingUser.userId}`)
-                    }
-                    else{
-                        newUser = new User({
-                            userId: member.user.id,
-                            timeJoined: getDate()
-                        })
-                        newUser.save()
-                        console.log(`${member.user.tag} saved successfully`)
-                    }
-                })
-            .catch(err => console.error('Error saving user:', err));
-        }));        
-    } catch (err) {
-        console.error(err);
-    }
+    writeUnverifiedUsers()
     // Kick all users who joined more than 48 hours ago and have not verified
     try {
         // Get all users from the database
@@ -76,6 +53,7 @@ client.on('ready', async () => {
         console.log(members)
         //let fortyEightHoursAgo = new Date(getDate() - 48*60*60*1000); // 48 hours ago
         let fortyEightHoursAgo = new Date(getDate() - 60 * 60 * 1000) //One hour ago
+        // Iterate through the users from the database and kick them if they joined more than 48 hours ago
         await Promise.all(members.map(async member => {   
             // If the user joined more than 48 hours ago
             if(member.timeJoined <= fortyEightHoursAgo) {
@@ -160,6 +138,7 @@ client.on('guildMemberRoleRemove', async(member, role) => {
 
 client.login(process.env.TOKEN)
 
+//Adds a string to an embed
 function embed(m) {
     output = {embeds: [new EmbedBuilder()
         .setColor(0xFFA500)
@@ -168,6 +147,7 @@ function embed(m) {
     return output
 }
 
+// Gets all users from the database
 async function fetchUsers() {
     try {
       const users = await User.find({})
@@ -177,16 +157,19 @@ async function fetchUsers() {
     }
   }
 
+// Gets a user from the database
 async function fetchUser(userId) {
     try{
         return User.findOne({ userId: userId })
     }
     catch (error){
         console.error('Error retrieving user:', error);
+        return null
     }
     
 }
 
+// Removes a user from the database
 async function removeUser(userId) {
     try {
       await User.findOneAndDelete({ userId: userId });
@@ -195,6 +178,7 @@ async function removeUser(userId) {
     }
   }
 
+// Adds a user to the database
 async function writeUser(userId){
     try {
         const newUser = new User({
@@ -210,6 +194,44 @@ async function writeUser(userId){
     }
 }
 
+// Add all unverified users to the database
+async function writeUnverifiedUsers(){
+    try {
+        const guild = client.guilds.cache.first();
+        let members = await guild.members.fetch();
+        await Promise.all(members.map(async member => {
+            if(member.user.bot) return
+            if(member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return
+            if(fetchUser(member.user.id) !== null) return
+            writeUser(member.user.id)
+            console.log(`${member.user.tag} saved successfully`)
+        }));        
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+//Kick all users who joined more than 48 hours ago and have not verified from the guild
+async function kickUsers(){
+    try {
+        const guild = client.guilds.cache.first();
+        let members = await guild.members.fetch();
+        await Promise.all(members.map(async member => {
+            if(member.user.bot) return
+            if(member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return
+            if(fetchUser(member.user.id) === null) return
+            let m = await guild.members.fetch(member.user.id);
+            if(m.user.bot) return
+            if(m.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return
+            console.log(`${m.user.tag} saved successfully`)
+            await m.kick('Kicked for not verifying within the timeline.')
+        }));        
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Gets the current date and time in EST
 function getDate(){
     var easternTime = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
     return easternTime
