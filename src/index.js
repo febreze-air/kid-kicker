@@ -131,6 +131,10 @@ client.on('ready', async () => {
     })
 })
 
+client.on('guildMemberRemove', async member => {
+    removeUser(member.user.id);
+});
+
 //Function to add a member along with the time they joined to the database when they join
 client.on('guildMemberAdd', async(m) => {
     //wait 5 minutes before adding the user to the database
@@ -210,4 +214,3 @@ function getDate(){
     var easternTime = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
     return easternTime
 }
-
