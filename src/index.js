@@ -25,7 +25,7 @@ client.on("ready", async () => {
   ); 
   const guild = client.guilds.cache.first();
   if (scheduled) return
-  cron.schedule("30 * * * *", async () => {
+  cron.schedule("52 * * * *", async () => {
     console.log("Attempting to kick kids...");
     try {
       let members = await guild.members.fetch();
@@ -33,8 +33,8 @@ client.on("ready", async () => {
         members.map(async (member) => {
           if (member.user.bot) return;
           if (member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return;
-          if (!member.kickable) return
-          if (!isUserTooOld(member)) return;
+          //if (!member.kickable) return
+          //if (!isUserTooOld(member)) return;
           console.log(
             `No, the member ${member.user.tag} does not have the role with ID "${process.env.VERIFIED_ROLE_ID}".`
           );
@@ -92,12 +92,12 @@ async function removeUser(member) {
         await member.send(
           `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${process.env.VERIFIED_ROLE_ID / (1000 * 60 * 60 *24)} day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
         );
-        // Kick the member with reason
-        await member.kick("Kicked for not verifying within the timeline.");
         // Send a notification user was kicked to the logs channel
         await logsChannel.send(
-          embed(`Kicked @${member.user.tag} for being a kid.`)
+          embed(`Kicked <@${member.user.id}> for being a kid.`)
         );
+        // Kick the member with reason
+        await member.kick("Kicked for not verifying within the timeline.");
         count++;
       } catch (err) {
         console.log("Cant kick: ", member.user.tag, err);
