@@ -4,13 +4,13 @@
 
 ## Table of Contents 📚
 
-1. [Introduction](#introduction)
-2. [Installation](#installation)
-3. [Environment Setup](#environment-setup)
-4. [Usage](#usage)
-5. [Contributing](#contributing)
-6. [License](#license)
-7. [Contact](#contact)
+1. [Introduction](#introduction-)
+2. [Installation](#installation-)
+3. [Environment Setup](#environment-setup-)
+4. [Usage](#usage-)
+5. [Contributing](#contributing-)
+6. [License](#license-)
+7. [Contact](#contact-)
 
 ## Introduction 🌟
 
