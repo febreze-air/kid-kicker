@@ -25,7 +25,7 @@ client.on("ready", async () => {
   ); 
   const guild = client.guilds.cache.first();
   if (scheduled) return
-  cron.schedule("52 * * * *", async () => {
+  cron.schedule("00 * * * *", async () => {
     console.log("Attempting to kick kids...");
     try {
       let members = await guild.members.fetch();
@@ -33,10 +33,10 @@ client.on("ready", async () => {
         members.map(async (member) => {
           if (member.user.bot) return;
           if (member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return;
-          //if (!member.kickable) return
-          //if (!isUserTooOld(member)) return;
+          if (!member.kickable) return
+          if (!isUserTooOld(member)) return;
           console.log(
-            `No, the member ${member.user.tag} does not have the role with ID "${process.env.VERIFIED_ROLE_ID}".`
+            `No, the member ${member.user.tag} does not have the role with ID "${process.env.VERIFIED_ROLE_ID} and has not verified within the timeline".`
           );
           if (count > 4) {
             console.log("Reached 5 kicks, stopping.");
