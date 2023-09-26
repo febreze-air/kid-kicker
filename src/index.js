@@ -25,17 +25,17 @@ client.on("ready", async () => {
   ); // Replace 'general' with your channel
   const guild = client.guilds.cache.first();
   if (scheduled) return
-  cron.schedule("00 * * * *", async () => {
+  cron.schedule("54 * * * *", async () => {
     console.log("Attempting to kick kids...");
     try {
       let members = await guild.members.fetch();
       await Promise.all(
         members.map(async (member) => {
           if (member.user.bot) return;
-          if (member.roles.cache.has(process.env.VERTIFIED_ROLE_ID)) return;
+          if (member.roles.cache.has(process.env.VERIFIED_ROLE_ID)) return;
           if (!isUserTooOld(member)) return;
           console.log(
-            `No, the member ${member.user.tag} does not have the role with ID "${process.env.VERTIFIED_ROLE_ID}".`
+            `No, the member ${member.user.tag} does not have the role with ID "${process.env.VERIFIED_ROLE_ID}".`
           );
           if (count > 4) {
             console.log("Reached 5 kicks, stopping.");
@@ -50,7 +50,7 @@ client.on("ready", async () => {
             });
             // Send a DM with the kick reason and invite link
             await member.send(
-              `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${process.env.VERTIFIED_ROLE_ID / (1000 * 60 * 60 *24)} day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
+              `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${process.env.VERIFIED_ROLE_ID / (1000 * 60 * 60 *24)} day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
             );
             // Kick the member with reason
             await member.kick("Kicked for not verifying within the timeline.");
@@ -104,7 +104,7 @@ async function removeUser(member) {
         });
         // Send a DM with the kick reason and invite link
         await member.send(
-          `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${process.env.VERTIFIED_ROLE_ID / (1000 * 60 * 60 *24)} day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
+          `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${process.env.VERIFIED_ROLE_ID / (1000 * 60 * 60 *24)} day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
         );
         // Kick the member with reason
         await member.kick("Kicked for not verifying within the timeline.");
