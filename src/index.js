@@ -24,9 +24,7 @@ client.on("ready", async () => {
     (ch) => ch.name === process.env.INVITE_CHANNEL_NAME
   ); // Replace 'general' with your channel
   const guild = client.guilds.cache.first();
-  if (scheduled) {
-    return;
-  }
+  if (scheduled) return
   cron.schedule("00 * * * *", async () => {
     console.log("Attempting to kick kids...");
     try {
@@ -35,12 +33,13 @@ client.on("ready", async () => {
         members.map(async (member) => {
           if (member.user.bot) return;
           if (member.roles.cache.has(process.env.VERTIFIED_ROLE_ID)) return;
+          if (!isUserTooOld(member)) return;
           console.log(
-            `Yes, the member ${member.user.tag} has the role with ID "${process.env.KID_ROLE_ID}".`
+            `No, the member ${member.user.tag} does not have the role with ID "${process.env.VERTIFIED_ROLE_ID}".`
           );
           if (count > 4) {
             console.log("Reached 5 kicks, stopping.");
-            await delay(10 * 60 * 1000);
+            await delay(10 * 60 * 1000); // 10 minutes
             count = 0;
             console.log("Resetting kick count.");
           }
@@ -51,7 +50,7 @@ client.on("ready", async () => {
             });
             // Send a DM with the kick reason and invite link
             await member.send(
-              `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the 2 day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
+              `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${process.env.VERTIFIED_ROLE_ID / (1000 * 60 * 60 *24)} day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
             );
             // Kick the member with reason
             await member.kick("Kicked for not verifying within the timeline.");
@@ -82,7 +81,7 @@ function embed(m) {
   return output;
 }
 
-//Checks if user is too old
+// Checks if user is too old
 function isUserTooOld(member) {
   const currentTime = new Date();
   const memberJoinedAt = member.joinedAt;
@@ -93,4 +92,28 @@ function isUserTooOld(member) {
   } else {
     return false;
   }
+}
+
+// Removes user from server
+async function removeUser(member) {
+    try {
+        logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID);
+        const invite = await channel.createInvite({
+          maxAge: 60 * 60 * 24 * 3, // 3 days
+          maxUses: 1, // 1 use
+        });
+        // Send a DM with the kick reason and invite link
+        await member.send(
+          `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${process.env.VERTIFIED_ROLE_ID / (1000 * 60 * 60 *24)} day time period.\nIf you are an adult, you can rejoin using this link: ${invite.url}`
+        );
+        // Kick the member with reason
+        await member.kick("Kicked for not verifying within the timeline.");
+        // Send a notification user was kicked to the logs channel
+        await logsChannel.send(
+          embed(`Kicked @${member.user.tag} for being a kid.`)
+        );
+        count++;
+      } catch (err) {
+        console.log("Cant kick: ", member.user.tag, err);
+      }
 }
