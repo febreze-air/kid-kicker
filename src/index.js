@@ -125,6 +125,7 @@ async function removeUser(member) {
   }
 }
 
+// Gets the formated time
 function getFormatedTime(time){
   let remaining = timeDifference;
 
