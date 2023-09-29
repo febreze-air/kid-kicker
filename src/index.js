@@ -1,5 +1,5 @@
 require("dotenv/config");
-const { Client, IntentsBitField, EmbedBuilder } = require("discord.js");
+const { Client, IntentsBitField, EmbedBuilder, time } = require("discord.js");
 const cron = require("node-cron");
 let scheduled = false;
 let count = 0;
@@ -55,6 +55,23 @@ client.on("ready", async () => {
   });
 });
 
+client.on('interactionCreate', (interaction) => { 
+  if (!interaction.isMessageContextMenuCommand()) return;
+
+  if (interaction.commandName === 'Time Since Joined') {
+    const member = interaction.targetMember;
+    const currentTime = new Date();
+    const memberJoinedAt = member.joinedAt;
+    const timeDifference = currentTime - memberJoinedAt;
+    const logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID)
+
+    timeSinceJoined = getFormatedTime(timeDifference);
+
+    guild.channels.cache.get(logsChannel).send(embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`));
+  }
+
+})
+
 client.login(process.env.TOKEN);
 
 function embed(m) {
@@ -106,4 +123,21 @@ async function removeUser(member) {
   } catch (err) {
     console.log("Cant kick: ", member.user.tag, err);
   }
+}
+
+function getFormatedTime(time){
+  let remaining = timeDifference;
+
+  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  remaining %= 1000 * 60 * 60 * 24;
+
+  const hours = Math.floor(remaining / (1000 * 60 * 60));
+  remaining %= 1000 * 60 * 60;
+
+  const minutes = Math.floor(remaining / (1000 * 60));
+  remaining %= 1000 * 60;
+
+  const seconds = Math.floor(remaining / 1000);
+
+  return `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
 }
