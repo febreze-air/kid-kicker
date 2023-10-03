@@ -3,9 +3,11 @@ const {
   Client,
   IntentsBitField,
   ContextMenuCommandBuilder,
+  SlashCommandBuilder,
   ApplicationCommandType,
   REST,
   Routes,
+  APIApplicationCommandPermissionsConstant,
 } = require("discord.js");
 const rest = new REST().setToken(process.env.TOKEN);
 const client = new Client({
@@ -16,8 +18,19 @@ const client = new Client({
 
 const commandsData = [
   new ContextMenuCommandBuilder()
-    .setName("Time Since Joined")
-    .setType(ApplicationCommandType.User),
+    .setName("TimeSinceJoined")
+    .setDescription("Get the time since a user joined the server")
+    .setType(ApplicationCommandType.User)
+    .setDefaultMemberPermissions(0),
+  new SlashCommandBuilder()
+    .setName("TimeSinceJoined")
+    .setDescription("Get the time since a user joined the server")
+    .setType(ApplicationCommandType.ChatInput)
+    .addUserOption((option) =>
+      option.setName("user").setDescription("The user to get the time for")
+    .setRequired(true)
+    )
+    .setDefaultMemberPermissions(0), 
 ];
 
 client.on("ready", async () => {
