@@ -56,40 +56,56 @@ client.on("ready", async () => {
 });
 
 //Context menu command handler
-client.on('interactionCreate', (interaction) => { 
-  if (!interaction.isMessageContextMenuCommand()) return;
+client.on("interactionCreate", (interaction) => {
+  try {
+    if (!interaction.isMessageContextMenuCommand()) return;
+    if (interaction.commandName === "TimeSinceJoined") {
+      const member = interaction.targetMember;
+      const currentTime = new Date();
+      const memberJoinedAt = member.joinedAt;
+      const timeDifference = currentTime - memberJoinedAt;
+      const logsChannel = client.channels.cache.get(
+        process.env.LOGS_CHANNEL_ID
+      );
 
-  if (interaction.commandName === 'TimeSinceJoined') {
-    const member = interaction.targetMember;
-    const currentTime = new Date();
-    const memberJoinedAt = member.joinedAt;
-    const timeDifference = currentTime - memberJoinedAt;
-    const logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID)
+      timeSinceJoined = getFormatedTime(timeDifference);
 
-    timeSinceJoined = getFormatedTime(timeDifference);
-
-    guild.channels.cache.get(logsChannel).send(embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`));
+      guild.channels.cache
+        .get(logsChannel)
+        .send(
+          embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`)
+        );
+    }
+  } catch (err) {
+    console.error(err);
   }
-
-})
+});
 
 //Slash command handler
-client.on('interactionCreate', (interaction) => { 
-  if (!interaction.isChatInputCommand()) return;
+client.on("interactionCreate", (interaction) => {
+  try {
+    if (!interaction.isChatInputCommand()) return;
+    if (interaction.commandName === "TimeSinceJoined") {
+      const member = interaction.targetMember;
+      const currentTime = new Date();
+      const memberJoinedAt = member.joinedAt;
+      const timeDifference = currentTime - memberJoinedAt;
+      const logsChannel = client.channels.cache.get(
+        process.env.LOGS_CHANNEL_ID
+      );
 
-  if (interaction.commandName === 'TimeSinceJoined') {
-    const member = interaction.targetMember;
-    const currentTime = new Date();
-    const memberJoinedAt = member.joinedAt;
-    const timeDifference = currentTime - memberJoinedAt;
-    const logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID)
+      timeSinceJoined = getFormatedTime(timeDifference);
 
-    timeSinceJoined = getFormatedTime(timeDifference);
-
-    guild.channels.cache.get(logsChannel).send(embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`));
+      guild.channels.cache
+        .get(logsChannel)
+        .send(
+          embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`)
+        );
+    }
+  } catch (err) {
+    console.error(err);
   }
-
-})
+});
 
 client.login(process.env.TOKEN);
 
@@ -145,7 +161,7 @@ async function removeUser(member) {
 }
 
 // Gets the formated time
-function getFormatedTime(time){
+function getFormatedTime(time) {
   let remaining = timeDifference;
 
   const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
