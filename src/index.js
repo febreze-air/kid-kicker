@@ -55,10 +55,29 @@ client.on("ready", async () => {
   });
 });
 
+//Context menu command handler
 client.on('interactionCreate', (interaction) => { 
   if (!interaction.isMessageContextMenuCommand()) return;
 
-  if (interaction.commandName === 'Time Since Joined') {
+  if (interaction.commandName === 'TimeSinceJoined') {
+    const member = interaction.targetMember;
+    const currentTime = new Date();
+    const memberJoinedAt = member.joinedAt;
+    const timeDifference = currentTime - memberJoinedAt;
+    const logsChannel = client.channels.cache.get(process.env.LOGS_CHANNEL_ID)
+
+    timeSinceJoined = getFormatedTime(timeDifference);
+
+    guild.channels.cache.get(logsChannel).send(embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`));
+  }
+
+})
+
+//Slash command handler
+client.on('interactionCreate', (interaction) => { 
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === 'TimeSinceJoined') {
     const member = interaction.targetMember;
     const currentTime = new Date();
     const memberJoinedAt = member.joinedAt;
