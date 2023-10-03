@@ -143,7 +143,7 @@ async function removeUser(member) {
     // Send a DM with the kick reason and invite link
     await member.send(
       `You have been kicked for the following reason: You did not join VC and verify as an adult with one of the staff within the ${
-        process.env.VERIFIED_ROLE_ID / (1000 * 60 * 60 * 24)
+        process.env.TIME_UNTIL_KICK / (1000 * 60 * 60 * 24)
       } day time period.\nIf you are an adult, you can rejoin using this link: ${
         invite.url
       }`
