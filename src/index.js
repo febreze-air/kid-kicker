@@ -1,5 +1,6 @@
 require("dotenv/config");
-const { Client, IntentsBitField, EmbedBuilder, time } = require("discord.js");
+const { Client, IntentsBitField, EmbedBuilder, time,REST,
+  Routes} = require("discord.js");
 const cron = require("node-cron");
 let scheduled = false;
 let count = 0;
@@ -56,25 +57,23 @@ client.on("ready", async () => {
 });
 
 //Context menu command handler
-client.on("interactionCreate", (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   try {
-    if (!interaction.isMessageContextMenuCommand()) return;
-    if (interaction.commandName === "TimeSinceJoined") {
-      const member = interaction.targetMember;
+    if (!interaction.isContextMenuCommand()) return;
+    if (interaction.commandName === "timejoined") {
+      const member = interaction.options.getUser("user").id;
       const currentTime = new Date();
-      const memberJoinedAt = member.joinedAt;
+      const guild = interaction.guild
+      const m = await guild.members.fetch(member)
+      const memberJoinedAt = m.joinedAt
       const timeDifference = currentTime - memberJoinedAt;
-      const logsChannel = client.channels.cache.get(
-        process.env.LOGS_CHANNEL_ID
-      );
+      const timeSinceJoined = getFormatedTime(timeDifference);
 
-      timeSinceJoined = getFormatedTime(timeDifference);
-
-      guild.channels.cache
-        .get(logsChannel)
-        .send(
-          embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`)
-        );
+      interaction.reply({
+        embeds: [createEmbed(`The user <@${m.user.id}> joined ${timeSinceJoined} ago.`)],
+        ephemeral: true,
+      })
+          
     }
   } catch (err) {
     console.error(err);
@@ -82,25 +81,23 @@ client.on("interactionCreate", (interaction) => {
 });
 
 //Slash command handler
-client.on("interactionCreate", (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   try {
     if (!interaction.isChatInputCommand()) return;
-    if (interaction.commandName === "TimeSinceJoined") {
-      const member = interaction.targetMember;
+    if (interaction.commandName === "timejoined") {
+      const member = interaction.options.getUser("user").id;
       const currentTime = new Date();
-      const memberJoinedAt = member.joinedAt;
+      const guild = interaction.guild
+      const m = await guild.members.fetch(member)
+      const memberJoinedAt = m.joinedAt
       const timeDifference = currentTime - memberJoinedAt;
-      const logsChannel = client.channels.cache.get(
-        process.env.LOGS_CHANNEL_ID
-      );
+      const timeSinceJoined = getFormatedTime(timeDifference);
 
-      timeSinceJoined = getFormatedTime(timeDifference);
-
-      guild.channels.cache
-        .get(logsChannel)
-        .send(
-          embed(`The user <@${member.user.id}> joined ${timeSinceJoined} ago.`)
-        );
+      interaction.reply({
+        embeds: [createEmbed(`The user <@${m.user.id}> joined ${timeSinceJoined} ago.`)],
+        ephemeral: true,
+      })
+      
     }
   } catch (err) {
     console.error(err);
@@ -114,6 +111,10 @@ function embed(m) {
     embeds: [new EmbedBuilder().setColor(0xffa500).setDescription(m)],
   };
   return output;
+}
+
+function createEmbed(m) {
+  return new EmbedBuilder().setColor(0xffa500).setDescription(m)
 }
 
 // Checks if user is too old
@@ -162,7 +163,7 @@ async function removeUser(member) {
 
 // Gets the formated time
 function getFormatedTime(time) {
-  let remaining = timeDifference;
+  let remaining = time;
 
   const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
   remaining %= 1000 * 60 * 60 * 24;

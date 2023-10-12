@@ -18,24 +18,24 @@ const client = new Client({
 
 const commandsData = [
   new ContextMenuCommandBuilder()
-    .setName("TimeSinceJoined")
-    .setDescription("Get the time since a user joined the server")
+    .setName("timejoined")
     .setType(ApplicationCommandType.User)
     .setDefaultMemberPermissions(0),
+
   new SlashCommandBuilder()
-    .setName("TimeSinceJoined")
-    .setDescription("Get the time since a user joined the server")
-    .setType(ApplicationCommandType.ChatInput)
-    .addUserOption((option) =>
-      option.setName("user").setDescription("The user to get the time for")
-    .setRequired(true)
-    )
-    .setDefaultMemberPermissions(0), 
+     .setName("timejoined")
+     .setDescription("gets time since the user joined")
+     .addUserOption((option) =>
+     option
+     .setName("user")
+     .setDescription("the user you would like info about")
+     .setRequired(true)
+     ), 
 ];
 
 client.on("ready", async () => {
-  const clientId = client.user.id;
-  const guildId = client.guilds.cache.first().id;
+  const clientId = await client.user.id;
+  const guildId = await client.guilds.cache.first().id;
   console.log(`Logged in as ${client.user.tag}! Client ID: ${clientId}`);
 
   try {
