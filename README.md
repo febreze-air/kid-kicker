@@ -20,7 +20,7 @@ Kid-Kicker is an automated bot designed to keep your server clean by removing un
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/kid-kicker.git
+    git clone https://github.com/febreze-air/kid-kicker.git
     ```
 
 2. Install dependencies:
