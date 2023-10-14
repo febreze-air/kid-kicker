@@ -1,6 +1,6 @@
 # Kid-Kicker 🚀
 
-<img src="./assets/Kid_Kicker_Logo.png" alt="Kid Kicker Logo" width="200"/>
+<img src="./assets/Kid_Kicker_Logo.png" alt="Kid Kicker Logo" width="300"/>
 
 > Remove users who have not verified and recieved a role in a server within a specified time frame.
 
