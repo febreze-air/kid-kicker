@@ -2,7 +2,7 @@
 
 <img src="./assets/Kid_Kicker_Logo.png" alt="Kid Kicker Logo" width="200"/>
 
-> Remove users who have not verified in a server within a specified time frame.
+> Remove users who have not verified and recieved a role in a server within a specified time frame.
 
 ## Table of Contents 📚
 
