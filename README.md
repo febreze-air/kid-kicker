@@ -1,6 +1,6 @@
 # Kid-Kicker 🚀
 
-![Kid Kicker Logo](./assets/Kid_Kicker_Logo.png)
+<img src="./assets/Kid_Kicker_Logo.png" alt="Kid Kicker Logo" width="200"/>
 
 > Remove users who have not verified in a server within a specified time frame.
 
